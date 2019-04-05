@@ -2,13 +2,15 @@
 """
 Created on Thu Apr  4 22:18:38 2019
 
-@author: yashr
+@author: yashr, shaiyon
 """
 import pandas as pd
-import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA 
+
 
 def load(filepath='dataset.csv'):
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(filepath, index_col=0, parse_dates=True)
     df = preprocess(df)
     return df
     
@@ -17,30 +19,28 @@ def load(filepath='dataset.csv'):
 def preprocess(df):
     """Preprocess the given dataframe for later modeling"""
     
-    #Create better date column
-    df['date'] = pd.to_datetime(df['Unnamed: 0']).astype('int64')
+    cols = df.columns
     
-    #Drop columns
-    df.drop(['Unnamed: 0'], inplace=True, axis=1)
-    
-    #Transformations
-    
-    #their transformations arent actually improving our R2?
-#    df['BDIY_MA'] = df['BDIY'].ewm(span=60).mean()
-#    df['HS_MA_diff'] = df['HS'] - df['HS'].ewm(span=60).mean()
-    
-    
-    #difference at lag 1
-#    df.loc[:,df.columns != 'date'] = df.loc[:,df.columns != 'date'].diff()    
-#    df_diff = df.loc[:,df.columns != 'date'].diff()    
-  #    df = df.join(df_diff, how='outer', rsuffix='_d')
-    df = df.join(df.shift(1), how='outer', rsuffix='_L1')    
-     
-    #Drop rows
+    # Target
+    df["ASPFWR5_1DAY"] = df["ASPFWR5"].shift(1, axis=0)
+                 
+    # Drop rows
     df.dropna(axis=0, inplace=True)
     
+    # Separate features and targets 
+    X = df.drop("ASPFWR5_1DAY", axis=1)
+    y = df["ASPFWR5_1DAY"]
+    
+    # Standardize data
+    df = pd.DataFrame((StandardScaler().fit_transform(X)), columns=cols)
+    
+    # Principal component analysis   
+    #pca = PCA(n_components = 10)
+    #pca.fit(df)
+        
     return df
 
-
+df = load("C:\\Users\\shaiyon\\Documents\\Datasets\\S&P 500 Prediction\\dataset.csv")
+print(df)
 
 
