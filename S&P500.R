@@ -6,26 +6,24 @@ dataset <- read_csv("Desktop/Python/Data/dataset.csv")
 financial <- read.csv("Desktop/R Studio/Constituent Financials.csv")
 View(dataset)
 
+#Mutating the "X1" column in the dataset to be a date type with form month-day-year
 dataset <- dataset %>%
   mutate(X1=as.Date.factor(dataset$X1), "%m-%d-%y")
 
 sector <- financial$Sector
 
+#Setting date as the date column in the dataset
 date <- dataset$X1
 
-ggplot(data=dataset, mapping=aes(x=EPS, y=CLOSE, color="Close Price vs. EPS"), origin=0, alpha=0.25) +
-  geom_hline(yintercept=2000, color="grey") +
-  geom_hline(yintercept=1000, color="grey") +
-  geom_vline(xintercept=30, color="grey") +
-  geom_vline(xintercept=60, color="grey") +
-  geom_vline(xintercept=90, color="grey") +
+#Basic plot of a set of data, with date on the x axis and any variable corresponding to that date in y axis
+#geom_smooth refers to the line of best fit going through the data
+ggplot(data=dataset, mapping=aes(x=date, y=CLOSE), alpha=0.25) +
   geom_hline(yintercept=mean(dataset$CLOSE), color="blue") +
-  geom_line(alpha=0.5, limits=c(0,2000, color="Close Price vs. EPS")) +
-  geom_smooth(color="black", alpha=0.1) +
-  theme(panel.background=element_rect(color="black", fill="white")) +
-  xlab("Earnings per Share") +
-  ylab("S&P 500 Close Price") +
-  scale_fill_manual(guide=guide_legend(title="Close Price"))
+  geom_line(alpha=1, color="black") +
+  geom_smooth(color="red", alpha=0.1) +
+  xlab("Put 'x' label here") +
+  ylab("Put 'y' label here") +
+  theme_minimal()
 
 ggplot(data=dataset) +
   geom_point(mapping=aes(x=LOW, y=CLOSE), origin=0)
