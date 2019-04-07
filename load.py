@@ -2,45 +2,43 @@
 """
 Created on Thu Apr  4 22:18:38 2019
 
-@author: yashr, shaiyon
+@author: shaiyon
 """
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA 
 
 
-def load(filepath='dataset.csv'):
+def load(filepath='dataset.csv', standardize=True, pred_time=1):
     df = pd.read_csv(filepath, index_col=0, parse_dates=True)
-    df = preprocess(df)
-    return df
+    X, y = preprocess(df, standardize, pred_time)
+    return X, y
     
 
 
-def preprocess(df):
-    """Preprocess the given dataframe for later modeling"""
+def preprocess(df, standardize, pred_time):
     
     cols = df.columns
     
-    # Target
-    df["ASPFWR5_1DAY"] = df["ASPFWR5"].shift(1, axis=0)
+    # Set up target as ASPFWR5 in pred_time days in the future
+    pred_name = "ASPFWR5_{}DAY".format(pred_time)
+    df[pred_name] = df["ASPFWR5"].shift(pred_time, axis=0)
                  
     # Drop rows
     df.dropna(axis=0, inplace=True)
     
     # Separate features and targets 
-    X = df.drop("ASPFWR5_1DAY", axis=1)
-    y = df["ASPFWR5_1DAY"]
+    X = df.drop(pred_name, axis=1)
+    y = df[pred_name]
     
-    # Standardize data
-    df = pd.DataFrame((StandardScaler().fit_transform(X)), columns=cols)
+    if standardize:
+        # Standardize data
+        X = pd.DataFrame((StandardScaler().fit_transform(X, y)), columns=cols)
     
     # Principal component analysis   
     #pca = PCA(n_components = 10)
     #pca.fit(df)
         
-    return df
-
-df = load("C:\\Users\\shaiyon\\Documents\\Datasets\\S&P 500 Prediction\\dataset.csv")
-print(df)
+    return X, y
 
 
