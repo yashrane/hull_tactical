@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 
-def load(filepath='dataset.csv', process=True, output="df"):
+def load(filepath='dataset.csv', process=True, output="df", pca_components=30):
     # Load data from csv
     df = pd.read_csv(filepath, index_col=0, parse_dates=True)
     
@@ -18,7 +18,7 @@ def load(filepath='dataset.csv', process=True, output="df"):
 
     # Preprocess data for modeling (default)
     if process:  
-        df = preprocess(df)
+        df = preprocess(df, pca_components)
                                      
     # Return single dataframe (default)
     if output=="df":
@@ -31,7 +31,7 @@ def load(filepath='dataset.csv', process=True, output="df"):
         return X, y
 
 
-def preprocess(df):
+def preprocess(df, pca_components):
     # Separate features and targets
     X = df.drop('ASPFWR5', axis=1)
     y = df['ASPFWR5']
@@ -40,7 +40,7 @@ def preprocess(df):
     X = StandardScaler().fit_transform(X)
     
     # Dimensionality reduction with principal component analysis 
-    X = PCA(n_components = 30).fit_transform(X)
+    X = PCA(n_components = pca_components).fit_transform(X)
     
     # Set index to datetime
     df = pd.DataFrame(X, index=y.index)
