@@ -8,33 +8,45 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-def load(filepath='dataset.csv', preprocess=True):
+
+def load(filepath='dataset.csv', process=True, output="df"):
     # Load data from csv
     df = pd.read_csv(filepath, index_col=0, parse_dates=True)
     
     # Drop rows
     df.dropna(axis=0, inplace=True)
 
-    # Preprocess data for modeling 
-    if preprocess:          
-                                 
-        # Separate features and targets
+    # Preprocess data for modeling (default)
+    if process:  
+        df = preprocess(df)
+                                     
+    # Return single dataframe (default)
+    if output=="df":
+        return df
+    
+    # Return X and y otherwise
+    else:
         X = df.drop('ASPFWR5', axis=1)
         y = df['ASPFWR5']
-        
-        # Standardize data
-        X = StandardScaler().fit_transform(X)
-            
-        # Dimensionality reduction with principal component analysis 
-        X = pd.DataFrame(PCA(n_components = 30).fit_transform(X))
-        
-        # Set index to datetime
-        X.reindex(y.index)        
-        df = pd.DataFrame(X.values, index=y.index)
-        # Merge X and y
-        df['ASPFWR5'] = y 
- 
-    return df
+        return X, y
 
-filepath = "C:\\Users\\shaiyon\\Documents\\Datasets\\S&P 500 Prediction\\dataset.csv"
-df = load(filepath, preprocess=True)
+
+def preprocess(df):
+    # Separate features and targets
+    X = df.drop('ASPFWR5', axis=1)
+    y = df['ASPFWR5']
+    
+    # Standardize features
+    X = StandardScaler().fit_transform(X)
+    
+    # Dimensionality reduction with principal component analysis 
+    X = PCA(n_components = 30).fit_transform(X)
+    
+    # Set index to datetime
+    df = pd.DataFrame(X, index=y.index)
+    # Merge X and y
+    df['ASPFWR5'] = y
+    
+    return df
+    
+    
