@@ -41,7 +41,7 @@ def test(df, model):
        counter+=1
        
 
-df = load()
+df = load(pca_components=0)
 
 
 # MODELING

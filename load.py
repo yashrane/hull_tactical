@@ -9,16 +9,20 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 
-def load(filepath='dataset.csv', process=True, output="df", pca_components=30):
+def load(filepath='dataset.csv', process=True, output="df", pca_components=0):
     # Load data from csv
-    df = pd.read_csv(filepath, index_col=0, parse_dates=True)
+    df = pd.read_csv(filepath)
+    df = df.rename(columns={'Unnamed: 0':'date'})
+    df['date'] = pd.to_datetime(df['date']).astype('int64')
     
-    # Drop rows
-    df.dropna(axis=0, inplace=True)
-
+    
     # Preprocess data for modeling (default)
-    if process:  
-        df = preprocess(df, pca_components)
+    if process: 
+        df = preprocess(df)
+        if pca_components > 0:
+            df = pca_preprocess(df, pca_components)
+
+        
                                      
     # Return single dataframe (default)
     if output=="df":
@@ -31,15 +35,18 @@ def load(filepath='dataset.csv', process=True, output="df", pca_components=30):
         return X, y
 
 
-def preprocess(df, pca_components):
+def pca_preprocess(df, pca_components):
+    """Preprocess the given dataframe using PCA"""
+    
+    # Drop rows
+    df.dropna(axis=0, inplace=True)
+    
     # Separate features and targets
     X = df.drop('ASPFWR5', axis=1)
     y = df['ASPFWR5']
     
-    # Standardize features
-    X = StandardScaler().fit_transform(X)
-    
     # Dimensionality reduction with principal component analysis 
+    X = StandardScaler().fit_transform(X)
     X = PCA(n_components = pca_components).fit_transform(X)
     
     # Set index to datetime
@@ -47,6 +54,16 @@ def preprocess(df, pca_components):
     # Merge X and y
     df['ASPFWR5'] = y
     
+
+    
     return df
     
+def preprocess(df):
+    """Preprocess the given dataframe for later modeling"""
+
+    df = df.join(df.shift(1), how='outer', rsuffix='_L1')
+     
+    #Drop rows
+    df.dropna(axis=0, inplace=True)
     
+    return df
