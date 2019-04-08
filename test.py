@@ -26,8 +26,8 @@ def test(df, model):
     
     tscv = TimeSeriesSplit(n_splits=5)
     
-    x = df.loc[:, df.columns != 'ASPFWR5']
-    y = df['ASPFWR5']
+    x = df.loc[:, df.columns != 'ASPFWR5_T']
+    y = df['ASPFWR5_T']
     
     counter=1
     for train_index, test_index in tscv.split(x):
@@ -74,7 +74,7 @@ test(df, rf)
 #ax = sns.barplot(y = asp.index, x=asp)
 
 #Feature Importances
-ax = sns.barplot(x=df.columns[df.columns != "ASPFWR5"][rf.feature_importances_ > 0.01], y=rf.feature_importances_[rf.feature_importances_ > 0.01])
+ax = sns.barplot(x=df.columns[df.columns != "ASPFWR5_T"][rf.feature_importances_ > 0.01], y=rf.feature_importances_[rf.feature_importances_ > 0.01])
 ax.set_xticklabels(ax.get_xticklabels(),rotation=30)
 
 

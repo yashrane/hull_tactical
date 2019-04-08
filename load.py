@@ -12,8 +12,7 @@ from sklearn.decomposition import PCA
 def load(filepath='dataset.csv', process=True, output="df", pca_components=0):
     # Load data from csv
     df = pd.read_csv(filepath)
-    df = df.rename(columns={'Unnamed: 0':'date'})
-    df['date'] = pd.to_datetime(df['date']).astype('int64')
+
     
     
     # Preprocess data for modeling (default)
@@ -22,7 +21,8 @@ def load(filepath='dataset.csv', process=True, output="df", pca_components=0):
         if pca_components > 0:
             df = pca_preprocess(df, pca_components)
 
-        
+    #Drop rows
+    df.dropna(axis=0, inplace=True)
                                      
     # Return single dataframe (default)
     if output=="df":
@@ -60,10 +60,18 @@ def pca_preprocess(df, pca_components):
     
 def preprocess(df):
     """Preprocess the given dataframe for later modeling"""
+    
+    #changing date column to integer
+    df = df.rename(columns={'Unnamed: 0':'date'})
+    df['date'] = pd.to_datetime(df['date']).astype('int64')
 
-    df = df.join(df.shift(1), how='outer', rsuffix='_L1')
-     
-    #Drop rows
-    df.dropna(axis=0, inplace=True)
+    #df = df.join(df.shift(1), how='outer', rsuffix='_L1')
+    
+    #The change in features from the previous day
+    df_diff = df.diff()    
+    df = df.join(df_diff, how='outer', rsuffix='_d')
+    
+    #Target variable is the next day's ASPFWR5
+    df['ASPFWR5_T'] = df['ASPFWR5'].shift(-1)    
     
     return df
